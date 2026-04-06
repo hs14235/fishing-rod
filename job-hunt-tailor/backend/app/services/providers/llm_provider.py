@@ -13,6 +13,7 @@ import logging
 
 from app.config import get_settings
 from app.schemas import GenerateRequest, GenerateResponse
+from app.services.cover_letter_builder import clean_cover_letter_output
 from app.services.providers.base import BaseGenerationProvider
 from app.services.providers.template_provider import TemplateProvider
 
@@ -41,6 +42,8 @@ then credentials line, then a one-sentence close.
 - Vary sentence length — mix short declarative with longer explanatory sentences.
 - Frame the candidate honestly as early-career / new grad.
 - Ground every claim in the profile above.
+- Never quote or paste sections of the job description verbatim.
+- Do not include headings such as "About", "Location", "Schedule", or "What you'll do".
 - Output only the letter text. No headers, no date, no address block.\
 """
 
@@ -73,6 +76,11 @@ class LLMProvider(BaseGenerationProvider):
         except Exception as exc:
             logger.warning("LLM generation failed, using template output: %s", exc)
             improved_letter = template_result.generated_cover_letter
+
+        improved_letter = clean_cover_letter_output(
+            improved_letter,
+            request.job_description,
+        )
 
         return GenerateResponse(
             keywords=template_result.keywords,

@@ -8,7 +8,11 @@ nothing is invented or hallucinated.
 from __future__ import annotations
 
 from app.schemas import GenerateRequest, GenerateResponse
-from app.services.cover_letter_builder import build_cover_letter, build_fit_summary
+from app.services.cover_letter_builder import (
+    build_cover_letter,
+    build_fit_summary,
+    clean_cover_letter_output,
+)
 from app.services.keyword_extractor import extract_keywords
 from app.services.project_selector import select_projects
 from app.services.providers.base import BaseGenerationProvider
@@ -42,6 +46,7 @@ class TemplateProvider(BaseGenerationProvider):
             company_notes=request.company_notes,
             extra_instructions=request.extra_instructions,
         )
+        cover_letter = clean_cover_letter_output(cover_letter, request.job_description)
 
         fit_summary = build_fit_summary(
             role_type=effective_role,

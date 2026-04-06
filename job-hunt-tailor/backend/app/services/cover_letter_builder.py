@@ -21,6 +21,7 @@ Quality rules enforced here
 
 from __future__ import annotations
 
+import re
 from typing import List
 
 from app.services.role_classifier import (
@@ -47,6 +48,18 @@ _DEFAULT_PHILOSOPHY = (
 
 _DEFAULT_CLOSING = (
     "I would welcome a chance to discuss this further. Thank you for your time."
+)
+
+_JD_LEAK_HEADINGS = (
+    "about ",
+    "location:",
+    "schedule:",
+    "what you'll do",
+    "what you will do",
+    "required skills",
+    "qualifications",
+    "responsibilities",
+    "preferred qualifications",
 )
 
 # ---------------------------------------------------------------------------
@@ -156,52 +169,130 @@ _CREDENTIALS: dict[str, str] = {
         "Stack: Python (FastAPI, Django), PostgreSQL, Docker, REST API design, "
         "with Java (Spring) and JavaScript alongside. "
         "My debugging instinct tends toward data — I check the schema and API "
-        "contract before the application logic. "
-        "B.S. Computer Science, Georgia Southern, May 2026."
+        "contract before the application logic."
     ),
     FULL_STACK: (
         "Stack: Python (FastAPI, Django), React/JavaScript, PostgreSQL, Docker, "
         "Node.js, Java (Spring). "
         "Having built both sides of the same system, I have learned how much "
-        "complexity moves between layers depending on where you make your data-shape decisions. "
-        "B.S. Computer Science, Georgia Southern, May 2026."
+        "complexity moves between layers depending on where you make your data-shape decisions."
     ),
     AI_ML: (
         "Stack: Python/FastAPI, FAISS, Sentence-Transformers, Ollama, "
         "Blender scripting, Unreal Engine 5, PostgreSQL, Docker. "
         "My interest in AI work is in the engineering layer — reliable pipelines, "
-        "predictable failure modes, systems that degrade gracefully. "
-        "B.S. Computer Science, Georgia Southern, May 2026."
+        "predictable failure modes, systems that degrade gracefully."
     ),
     PLATFORM: (
         "Stack: Python, PostgreSQL, Docker, REST APIs, GitHub, with SQL "
         "and Java in the mix. "
         "I think about operational properties as much as feature delivery: "
-        "what is this system guaranteed to do, and what happens when that guarantee is tested. "
-        "B.S. Computer Science, Georgia Southern, May 2026."
+        "what is this system guaranteed to do, and what happens when that guarantee is tested."
     ),
     LEADERSHIP: (
         "Stack: Python (FastAPI, Django), React/JavaScript, PostgreSQL, Docker, "
         "Java (Spring). "
         "I am most effective where I am expected to be in the code and coordinating — "
-        "not choosing between the two. "
-        "B.S. Computer Science, Georgia Southern, May 2026."
+        "not choosing between the two."
     ),
     SOFTWARE_ENGINEER: (
         "Stack: Python (FastAPI, Django), React/JavaScript, PostgreSQL, Docker, "
         "Java (Spring), Node.js. "
         "I debug by tracing data contracts — checking what is promised at each "
-        "boundary and where that promise is first broken. "
-        "B.S. Computer Science, Georgia Southern, May 2026."
+        "boundary and where that promise is first broken."
     ),
     FRONTEND: (
         "Stack: React, JavaScript, CSS/HTML, with REST API integration and "
         "some Python/FastAPI on the backend side. "
         "I write frontend code with an explicit model of what the API can and "
-        "cannot guarantee, which shapes how I handle loading states and errors. "
-        "B.S. Computer Science, Georgia Southern, May 2026."
+        "cannot guarantee, which shapes how I handle loading states and errors."
     ),
 }
+
+
+def _condense_line(text: str) -> str:
+    return re.sub(r"\s+", " ", text).strip()
+
+
+def _build_company_signal(*, company_name: str, company_notes: str) -> str:
+    """Convert optional company notes into one safe sentence.
+
+    If notes look like pasted job-description blocks, ignore them.
+    """
+    raw = company_notes.strip()
+    if not raw:
+        return ""
+
+    lines = [ln.strip(" -\t") for ln in raw.splitlines() if ln.strip()]
+    if len(lines) > 4:
+        return ""
+
+    lowered = [ln.lower() for ln in lines]
+    if any(any(h in ln for h in _JD_LEAK_HEADINGS) for ln in lowered):
+        return ""
+
+    one_line = _condense_line(" ".join(lines))
+    if len(one_line.split()) > 30:
+        return ""
+
+    return (
+        f"I am especially interested in {company_name} because {one_line.rstrip('.')}"
+        "."
+    )
+
+
+def _build_tailored_closing(*, company_name: str, job_title: str, role_type: str, keywords: List[str]) -> str:
+    """Generate a concise closing sentence tied to company + role context."""
+    signal = {
+        BACKEND: "API and data-contract reliability",
+        FULL_STACK: "end-to-end product delivery across frontend and backend",
+        AI_ML: "AI pipeline reliability and grounded implementation",
+        PLATFORM: "platform reliability under real constraints",
+        LEADERSHIP: "technical leadership while staying hands-on",
+        FRONTEND: "frontend quality grounded in real API constraints",
+        SOFTWARE_ENGINEER: "end-to-end engineering execution",
+    }.get(role_type, "end-to-end engineering execution")
+
+    keyword_hint = ""
+    if keywords:
+        top = ", ".join(keywords[:2])
+        keyword_hint = f" with focus on {top}"
+
+    article = "an" if job_title.strip().lower()[:1] in {"a", "e", "i", "o", "u"} else "a"
+
+    return (
+        f"I would welcome the chance to contribute to {company_name} as {article} {job_title} "
+        f"through {signal}{keyword_hint}. Thank you for your time."
+    )
+
+
+def clean_cover_letter_output(letter: str, job_description: str) -> str:
+    """Remove obvious job-description leakage from generated letter text."""
+    jd_lines = {
+        _condense_line(ln).lower()
+        for ln in job_description.splitlines()
+        if len(_condense_line(ln)) >= 45
+    }
+
+    cleaned_lines: list[str] = []
+    for raw in letter.splitlines():
+        line = raw.strip()
+        if not line:
+            cleaned_lines.append("")
+            continue
+
+        compact = _condense_line(line)
+        lowered = compact.lower()
+        if any(lowered.startswith(h) for h in _JD_LEAK_HEADINGS):
+            continue
+        if lowered in jd_lines:
+            continue
+
+        cleaned_lines.append(compact)
+
+    text = "\n".join(cleaned_lines)
+    text = re.sub(r"\n{3,}", "\n\n", text).strip()
+    return text
 
 # ---------------------------------------------------------------------------
 # Fit summaries — short analyst-style read, not a marketing pitch.
@@ -286,8 +377,12 @@ def build_cover_letter(
     )
 
     # Optional: append company context if the user provided notes
-    if company_notes.strip():
-        opening = opening + "\n\n" + company_notes.strip()
+    company_signal = _build_company_signal(
+        company_name=company_name,
+        company_notes=company_notes,
+    )
+    if company_signal:
+        opening = opening + "\n\n" + company_signal
 
     # Paragraph 2: engineering philosophy (80% fixed, user-editable in Settings)
     philosophy = fixed_philosophy.strip() if fixed_philosophy.strip() else _DEFAULT_PHILOSOPHY
@@ -295,10 +390,18 @@ def build_cover_letter(
     # Paragraph 3: credentials
     credentials = _CREDENTIALS.get(effective_role, _CREDENTIALS[SOFTWARE_ENGINEER])
 
-    # Paragraph 4: closing
-    closing = closing_block.strip() if closing_block.strip() else _DEFAULT_CLOSING
+    # Paragraph 4: closing (custom user value wins; otherwise generate tailored close)
+    custom_closing = closing_block.strip()
+    default_closing = _build_tailored_closing(
+        company_name=company_name,
+        job_title=job_title,
+        role_type=effective_role,
+        keywords=keywords,
+    )
+    closing = custom_closing if custom_closing and custom_closing != _DEFAULT_CLOSING else default_closing
 
-    return "\n\n".join(p.strip() for p in [opening, philosophy, credentials, closing] if p.strip())
+    letter = "\n\n".join(p.strip() for p in [opening, philosophy, credentials, closing] if p.strip())
+    return clean_cover_letter_output(letter, "")
 
 
 def build_fit_summary(

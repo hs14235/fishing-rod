@@ -49,17 +49,40 @@ cd job-hunt-tailor
 
 ### 2. Backend
 
+Windows PowerShell:
+
+```powershell
+cd backend
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+```
+
+Bash:
+
 ```bash
 cd backend
 python -m venv .venv
-source .venv/bin/activate        # Windows PowerShell: .\.venv\Scripts\Activate.ps1
+source .venv/bin/activate
 pip install -r requirements.txt
+Copy-Item .env.example .env -Force
+uvicorn app.main:app --reload --port 8000
 ```
 
 Copy and configure environment:
 
+Windows PowerShell:
+
+```powershell
+Copy-Item .env.example .env -Force
+uvicorn app.main:app --reload --port 8000
+# Optional: add OPENAI_API_KEY to enable LLM-powered cover letters
+```
+
+Bash:
+
 ```bash
-cp .env.example .env             # Windows PowerShell: Copy-Item .env.example .env
+cp .env.example .env
 # Optional: add OPENAI_API_KEY to enable LLM-powered cover letters
 ```
 
@@ -98,6 +121,9 @@ npm run dev
 Use `npm run dev` for local development (not `npm start`).
 
 App available at: http://localhost:5173
+
+If port 5173 is already in use, Vite automatically uses the next port (for
+example, http://localhost:5174).
 
 ---
 

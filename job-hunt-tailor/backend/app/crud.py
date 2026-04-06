@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Optional
 
 from sqlalchemy import or_
@@ -41,7 +41,7 @@ def list_applications(
 
 
 def create_application(db: Session, data: ApplicationCreate) -> Application:
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
     app = Application(**data.model_dump(), created_at=now, updated_at=now)
     db.add(app)
     db.commit()
@@ -58,7 +58,7 @@ def update_application(
     changes = data.model_dump(exclude_none=True)
     for field, value in changes.items():
         setattr(app, field, value)
-    app.updated_at = datetime.utcnow()
+    app.updated_at = datetime.now(timezone.utc)
     db.commit()
     db.refresh(app)
     return app
@@ -84,12 +84,12 @@ def get_settings(db: Session) -> Optional[UserProfileSettings]:
 def upsert_settings(db: Session, data: SettingsUpdate) -> UserProfileSettings:
     settings = db.query(UserProfileSettings).first()
     if settings is None:
-        settings = UserProfileSettings(updated_at=datetime.utcnow())
+        settings = UserProfileSettings(updated_at=datetime.now(timezone.utc))
         db.add(settings)
     changes = data.model_dump(exclude_none=True)
     for field, value in changes.items():
         setattr(settings, field, value)
-    settings.updated_at = datetime.utcnow()
+    settings.updated_at = datetime.now(timezone.utc)
     db.commit()
     db.refresh(settings)
     return settings

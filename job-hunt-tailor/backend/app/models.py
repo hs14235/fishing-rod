@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy import Column, DateTime, Integer, String, Text
 
@@ -24,8 +24,8 @@ class Application(Base):
     generated_resume_suggestions_json = Column(Text, default="[]")
     edited_notes = Column(Text, default="")
 
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-    updated_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
 
 
 class UserProfileSettings(Base):
@@ -39,4 +39,4 @@ class UserProfileSettings(Base):
     default_tone = Column(String(50), default="balanced")
     default_emphasis = Column(String(50), default="auto")
 
-    updated_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)

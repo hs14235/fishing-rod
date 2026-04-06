@@ -18,8 +18,8 @@ export default function ApplicationDetail() {
 
   const [app, setApp]                   = useState(null)
   const [editedCL, setEditedCL]         = useState('')
-  const [editedNotes, setNotes]         = useState('')
-  const [editedStatus, setStatus]       = useState('draft')
+  const [editedNotes, setEditedNotes]   = useState('')
+  const [editedStatus, setEditedStatus] = useState('draft')
   const [loading, setLoading]           = useState(true)
   const [saving, setSaving]             = useState(false)
   const [regenerating, setRegenerating] = useState(false)
@@ -35,8 +35,8 @@ export default function ApplicationDetail() {
       const data = await api.getApplication(id)
       setApp(data)
       setEditedCL(data.edited_cover_letter || data.generated_cover_letter || '')
-      setNotes(data.edited_notes || '')
-      setStatus(data.status || 'draft')
+      setEditedNotes(data.edited_notes || '')
+      setEditedStatus(data.status || 'draft')
     } catch (e) {
       setError(e.message)
     } finally {
@@ -125,7 +125,7 @@ export default function ApplicationDetail() {
             className="input"
             style={{ width: 'auto' }}
             value={editedStatus}
-            onChange={e => setStatus(e.target.value)}
+            onChange={e => setEditedStatus(e.target.value)}
           >
             {STATUSES.map(s => (
               <option key={s} value={s}>{s}</option>
@@ -196,7 +196,7 @@ export default function ApplicationDetail() {
             <textarea
               className="input textarea-sm"
               value={editedNotes}
-              onChange={e => setNotes(e.target.value)}
+              onChange={e => setEditedNotes(e.target.value)}
               placeholder="Recruiter name, interview prep notes, deadlines…"
             />
           </section>

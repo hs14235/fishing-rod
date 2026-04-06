@@ -3,7 +3,7 @@
 Run once: if a settings row already exists it is not overwritten.
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy.orm import Session
 
@@ -81,7 +81,7 @@ def seed_default_settings(db: Session) -> None:
         closing_block_text=CLOSING_BLOCK_TEXT,
         default_tone="balanced",
         default_emphasis="auto",
-        updated_at=datetime.utcnow(),
+        updated_at=datetime.now(timezone.utc),
     )
     db.add(settings)
     db.commit()

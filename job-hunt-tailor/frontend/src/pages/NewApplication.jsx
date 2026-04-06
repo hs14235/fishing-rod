@@ -21,7 +21,7 @@ export default function NewApplication() {
   const [form, setForm]           = useState(EMPTY_FORM)
   const [result, setResult]       = useState(null)
   const [editedCL, setEditedCL]   = useState('')
-  const [editedNotes, setNotes]   = useState('')
+  const [editedNotes, setEditedNotes] = useState('')
   const [generating, setGenerating] = useState(false)
   const [saving, setSaving]       = useState(false)
   const [error, setError]         = useState(null)
@@ -41,7 +41,7 @@ export default function NewApplication() {
       const data = await api.generate(form)
       setResult(data)
       setEditedCL(data.generated_cover_letter)
-      setNotes('')
+      setEditedNotes('')
     } catch (e) {
       setError(e.message)
     } finally {
@@ -61,8 +61,7 @@ export default function NewApplication() {
         generated_cover_letter:             result.generated_cover_letter,
         edited_cover_letter:                editedCL,
         generated_resume_suggestions_json:  JSON.stringify(result.resume_suggestions),
-        edited_notes:                       editedNotes,
-        status:                             'draft',
+        edited_notes:                       editedNotes,        status:                             'draft',
       })
       navigate(`/applications/${app.id}`)
     } catch (e) {
@@ -271,7 +270,7 @@ export default function NewApplication() {
                 <textarea
                   className="input textarea-sm"
                   value={editedNotes}
-                  onChange={e => setNotes(e.target.value)}
+                  onChange={e => setEditedNotes(e.target.value)}
                   placeholder="Personal notes about this application (recruiter name, deadlines, etc.)"
                 />
               </section>

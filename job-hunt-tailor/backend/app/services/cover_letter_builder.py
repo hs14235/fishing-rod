@@ -155,36 +155,50 @@ _CREDENTIALS: dict[str, str] = {
     BACKEND: (
         "Stack: Python (FastAPI, Django), PostgreSQL, Docker, REST API design, "
         "with Java (Spring) and JavaScript alongside. "
+        "My debugging instinct tends toward data — I check the schema and API "
+        "contract before the application logic. "
         "B.S. Computer Science, Georgia Southern, May 2026."
     ),
     FULL_STACK: (
         "Stack: Python (FastAPI, Django), React/JavaScript, PostgreSQL, Docker, "
         "Node.js, Java (Spring). "
+        "Having built both sides of the same system, I have learned how much "
+        "complexity moves between layers depending on where you make your data-shape decisions. "
         "B.S. Computer Science, Georgia Southern, May 2026."
     ),
     AI_ML: (
         "Stack: Python/FastAPI, FAISS, Sentence-Transformers, Ollama, "
         "Blender scripting, Unreal Engine 5, PostgreSQL, Docker. "
+        "My interest in AI work is in the engineering layer — reliable pipelines, "
+        "predictable failure modes, systems that degrade gracefully. "
         "B.S. Computer Science, Georgia Southern, May 2026."
     ),
     PLATFORM: (
         "Stack: Python, PostgreSQL, Docker, REST APIs, GitHub, with SQL "
         "and Java in the mix. "
+        "I think about operational properties as much as feature delivery: "
+        "what is this system guaranteed to do, and what happens when that guarantee is tested. "
         "B.S. Computer Science, Georgia Southern, May 2026."
     ),
     LEADERSHIP: (
         "Stack: Python (FastAPI, Django), React/JavaScript, PostgreSQL, Docker, "
         "Java (Spring). "
+        "I am most effective where I am expected to be in the code and coordinating — "
+        "not choosing between the two. "
         "B.S. Computer Science, Georgia Southern, May 2026."
     ),
     SOFTWARE_ENGINEER: (
         "Stack: Python (FastAPI, Django), React/JavaScript, PostgreSQL, Docker, "
         "Java (Spring), Node.js. "
+        "I debug by tracing data contracts — checking what is promised at each "
+        "boundary and where that promise is first broken. "
         "B.S. Computer Science, Georgia Southern, May 2026."
     ),
     FRONTEND: (
         "Stack: React, JavaScript, CSS/HTML, with REST API integration and "
         "some Python/FastAPI on the backend side. "
+        "I write frontend code with an explicit model of what the API can and "
+        "cannot guarantee, which shapes how I handle loading states and errors. "
         "B.S. Computer Science, Georgia Southern, May 2026."
     ),
 }

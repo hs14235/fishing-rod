@@ -52,7 +52,10 @@ cd job-hunt-tailor
 ```bash
 cd backend
 python -m venv .venv
-source .venv/bin/activate        # Windows: .venv\Scripts\activate
+    # Windows:
+.venv\Scripts\activate
+   # Bash:
+# source .venv/bin/activate    
 pip install -r requirements.txt
 ```
 
